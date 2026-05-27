@@ -16,8 +16,8 @@ final class ControllerMappingStore: ObservableObject {
         .buttonB: .mouseButton(.right),
         .buttonX: .keyboardKey("R"),
         .buttonY: .systemAction(.missionControl),
-        .leftStick: .mouseScroll(axis: .vertical),
-        .rightStick: .mouseMove(axis: .x)
+        .leftStickMove: .mouseScroll(axis: .vertical),
+        .rightStickMove: .mouseMove(axis: .x)
     ]
 
     func action(for input: ControllerInput) -> ControllerMappingAction? {
