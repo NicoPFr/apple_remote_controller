@@ -1,14 +1,41 @@
+//
+//  GameControllerManager.swift
+//  apple_remote_controller
+//
+//  Created by Nicolas Peeters on 26/05/2026.
+//
+
+
 import Foundation
 import GameController
 import Combine
+
+struct StickVector: Equatable {
+    var x: Float
+    var y: Float
+
+    static let zero = StickVector(x: 0, y: 0)
+
+    var magnitude: Float {
+        sqrt((x * x) + (y * y))
+    }
+
+    var isNearlyZero: Bool {
+        abs(x) < 0.001 && abs(y) < 0.001
+    }
+}
 
 @MainActor
 final class GameControllerManager: ObservableObject {
     @Published private(set) var connectedControllerName: String?
     @Published private(set) var activeInputs: Set<ControllerInput> = []
+    @Published private(set) var leftStickVector: StickVector = .zero
+    @Published private(set) var rightStickVector: StickVector = .zero
 
     var onInputPressed: ((ControllerInput) -> Void)?
     var onInputReleased: ((ControllerInput) -> Void)?
+    var onLeftStickChanged: ((StickVector) -> Void)?
+    var onRightStickChanged: ((StickVector) -> Void)?
 
     private var controller: GCController?
 
@@ -22,8 +49,12 @@ final class GameControllerManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] notification in
-            guard let controller = notification.object as? GCController else { return }
-            self?.handleControllerConnected(controller)
+            guard let self,
+                  let controller = notification.object as? GCController else { return }
+
+            Task { @MainActor in
+                self.handleControllerConnected(controller)
+            }
         }
 
         NotificationCenter.default.addObserver(
@@ -31,7 +62,11 @@ final class GameControllerManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.handleControllerDisconnected()
+            guard let self else { return }
+
+            Task { @MainActor in
+                self.handleControllerDisconnected()
+            }
         }
 
         if let first = GCController.controllers().first {
@@ -49,6 +84,8 @@ final class GameControllerManager: ObservableObject {
         controller = nil
         connectedControllerName = nil
         activeInputs.removeAll()
+        leftStickVector = .zero
+        rightStickVector = .zero
     }
 
     private func configureHandlers(for controller: GCController) {
@@ -109,6 +146,14 @@ final class GameControllerManager: ObservableObject {
         gamepad.rightThumbstickButton?.pressedChangedHandler = { [weak self] _, _, pressed in
             self?.update(.rightStick, pressed: pressed)
         }
+
+        gamepad.leftThumbstick.valueChangedHandler = { [weak self] _, xValue, yValue in
+            self?.updateLeftStick(StickVector(x: xValue, y: yValue))
+        }
+
+        gamepad.rightThumbstick.valueChangedHandler = { [weak self] _, xValue, yValue in
+            self?.updateRightStick(StickVector(x: xValue, y: yValue))
+        }
     }
 
     private func update(_ input: ControllerInput, pressed: Bool) {
@@ -119,5 +164,15 @@ final class GameControllerManager: ObservableObject {
             activeInputs.remove(input)
             onInputReleased?(input)
         }
+    }
+
+    private func updateLeftStick(_ vector: StickVector) {
+        leftStickVector = vector
+        onLeftStickChanged?(vector)
+    }
+
+    private func updateRightStick(_ vector: StickVector) {
+        rightStickVector = vector
+        onRightStickChanged?(vector)
     }
 }

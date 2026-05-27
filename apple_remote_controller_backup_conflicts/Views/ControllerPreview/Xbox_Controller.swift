@@ -5,17 +5,24 @@ struct XboxControllerView: View {
   var body: some View {
     if isResizable {
       canvas
+<<<<<<< HEAD
         .frame(idealWidth: 744.0, idealHeight: 500.0)
     } else {
       canvas
         .frame(width: 744.0, height: 500.0)
+=======
+        .frame(idealWidth: 744.0, idealHeight: 744.0)
+    } else {
+      canvas
+        .frame(width: 744.0, height: 744.0)
+>>>>>>> develop
     }
   }
 
   private var isResizable = false
 
   func resizable() -> Self {
-     var copy = self
+     var copy = self 
      copy.isResizable = true
      return copy
   }
@@ -26,7 +33,7 @@ struct XboxControllerView: View {
       colorMode: .linear,
       rendersAsynchronously: false
     ) { context, size in
-      let scale = CGSize(width: size.width / 744.0, height: size.height / 500.0)
+      let scale = CGSize(width: size.width / 744.0, height: size.height / 500.0)                                  
       context.withCGContext { ctx in
         ctx.scaleBy(x: scale.width, y: scale.height)
         ctx.saveGState()
@@ -2822,8 +2829,12 @@ struct XboxControllerView: View {
         ctx.setLineWidth(0.96)
         ctx.addPath(path60)
         ctx.strokePath()
-        ctx.restoreGState()
+        ctx.restoreGState()    
       }
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> develop

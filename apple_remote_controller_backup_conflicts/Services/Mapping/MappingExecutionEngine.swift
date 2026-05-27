@@ -1,7 +1,15 @@
+//
+//  MappingExecutionEngine.swift
+//  apple_remote_controller
+//
+//  Created by Nicolas Peeters on 26/05/2026.
+//
+
+
 import Foundation
 
 @MainActor
-final class MappingExecutionEngine: ObservableObject {
+final class MappingExecutionEngine {
     private let mappingStore: ControllerMappingStore
     private let dispatcher = SystemEventDispatcher()
 
@@ -15,6 +23,6 @@ final class MappingExecutionEngine: ObservableObject {
     }
 
     func handleInputReleased(_ input: ControllerInput) {
-        // utile plus tard pour les actions continues
+        // réservé pour press/release ou maintien plus tard
     }
 }

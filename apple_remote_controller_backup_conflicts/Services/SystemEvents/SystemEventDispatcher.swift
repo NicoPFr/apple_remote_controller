@@ -1,3 +1,11 @@
+//
+//  SystemEventDispatcher.swift
+//  apple_remote_controller
+//
+//  Created by Nicolas Peeters on 26/05/2026.
+//
+
+
 import Foundation
 import AppKit
 
@@ -17,11 +25,60 @@ final class SystemEventDispatcher {
             break
 
         case .mouseScroll(let axis):
-            scroll(axis)
+            scrollStep(axis: axis, amount: 12)
 
         case .systemAction(let action):
             performSystemAction(action)
         }
+    }
+
+    func moveMouseBy(deltaX: CGFloat, deltaY: CGFloat) {
+        let currentLocation = NSEvent.mouseLocation
+        let newLocation = CGPoint(
+            x: currentLocation.x + deltaX,
+            y: currentLocation.y + deltaY
+        )
+
+        guard let moveEvent = CGEvent(
+            mouseEventSource: CGEventSource(stateID: .combinedSessionState),
+            mouseType: .mouseMoved,
+            mouseCursorPosition: newLocation,
+            mouseButton: .left
+        ) else {
+            return
+        }
+
+        moveEvent.post(tap: .cghidEventTap)
+    }
+
+    func scrollStep(axis: ScrollAxis, amount: Int32) {
+        guard amount != 0 else { return }
+
+        let event: CGEvent?
+
+        switch axis {
+        case .vertical:
+            event = CGEvent(
+                scrollWheelEvent2Source: nil,
+                units: .pixel,
+                wheelCount: 1,
+                wheel1: amount,
+                wheel2: 0,
+                wheel3: 0
+            )
+
+        case .horizontal:
+            event = CGEvent(
+                scrollWheelEvent2Source: nil,
+                units: .pixel,
+                wheelCount: 2,
+                wheel1: 0,
+                wheel2: amount,
+                wheel3: 0
+            )
+        }
+
+        event?.post(tap: .cghidEventTap)
     }
 
     private func sendKeyboardKey(_ key: String) {
@@ -84,34 +141,6 @@ final class SystemEventDispatcher {
 
         mouseDown?.post(tap: .cghidEventTap)
         mouseUp?.post(tap: .cghidEventTap)
-    }
-
-    private func scroll(_ axis: ScrollAxis) {
-        let event: CGEvent?
-
-        switch axis {
-        case .vertical:
-            event = CGEvent(
-                scrollWheelEvent2Source: nil,
-                units: .pixel,
-                wheelCount: 1,
-                wheel1: 12,
-                wheel2: 0,
-                wheel3: 0
-            )
-
-        case .horizontal:
-            event = CGEvent(
-                scrollWheelEvent2Source: nil,
-                units: .pixel,
-                wheelCount: 2,
-                wheel1: 0,
-                wheel2: 12,
-                wheel3: 0
-            )
-        }
-
-        event?.post(tap: .cghidEventTap)
     }
 
     private func performSystemAction(_ action: SystemAction) {

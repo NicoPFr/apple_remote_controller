@@ -14,12 +14,9 @@ struct MappingEditorView: View {
     let selectedInput: ControllerInput?
 
     @State private var selectedActionType: MappingActionType = .keyboardKey
-
-    @State private var capturedKey: CapturedShortcut?
-    @State private var capturedShortcut: CapturedShortcut?
-    @State private var isRecordingKey = false
-    @State private var isRecordingShortcut = false
-
+    @State private var keyboardKey: String = ""
+    @State private var shortcutKey: String = ""
+    @State private var shortcutModifiers: Set<KeyboardModifier> = []
     @State private var selectedMouseButton: MouseButton = .left
     @State private var selectedMouseAxis: MouseAxis = .x
     @State private var selectedScrollAxis: ScrollAxis = .vertical
@@ -82,7 +79,6 @@ struct MappingEditorView: View {
         }
     }
 
-    @ViewBuilder
     private var actionConfigurationSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Configuration")
@@ -90,22 +86,34 @@ struct MappingEditorView: View {
 
             switch selectedActionType {
             case .keyboardKey:
-                keyCaptureSection(
-                    title: "Touche clavier",
-                    captured: capturedKey,
-                    isRecording: $isRecordingKey,
-                    binding: $capturedKey,
-                    help: "Clique sur enregistrer, puis appuie sur une touche."
-                )
+                TextField("Exemple : Space, A, Escape, Return", text: $keyboardKey)
 
             case .keyboardShortcut:
-                keyCaptureSection(
-                    title: "Raccourci clavier",
-                    captured: capturedShortcut,
-                    isRecording: $isRecordingShortcut,
-                    binding: $capturedShortcut,
-                    help: "Clique sur enregistrer, puis appuie sur la combinaison souhaitée."
-                )
+                VStack(alignment: .leading, spacing: 10) {
+                    TextField("Touche principale", text: $shortcutKey)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Modificateurs")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        ForEach(KeyboardModifier.allCases, id: \.self) { modifier in
+                            Toggle(
+                                modifier.label,
+                                isOn: Binding(
+                                    get: { shortcutModifiers.contains(modifier) },
+                                    set: { isOn in
+                                        if isOn {
+                                            shortcutModifiers.insert(modifier)
+                                        } else {
+                                            shortcutModifiers.remove(modifier)
+                                        }
+                                    }
+                                )
+                            )
+                        }
+                    }
+                }
 
             case .mouseButton:
                 Picker("Bouton souris", selection: $selectedMouseButton) {
@@ -141,79 +149,6 @@ struct MappingEditorView: View {
             }
         }
     }
-    
-    private func displayText(for captured: CapturedShortcut?, isRecording: Bool) -> String {
-        if isRecording {
-            return "Appuie sur une touche..."
-        }
-
-        return captured?.displayLabel ?? "Cliquer pour définir une touche"
-    }
-
-    private func displayColor(forRecording isRecording: Bool, hasValue: Bool) -> Color {
-        if isRecording {
-            return Color.accentColor
-        }
-
-        return hasValue ? Color.primary : Color.secondary
-    }
-
-    private func keyCaptureSection(
-        title: String,
-        captured: CapturedShortcut?,
-        isRecording: Binding<Bool>,
-        binding: Binding<CapturedShortcut?>,
-        help: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Button {
-                isRecording.wrappedValue = true
-            } label: {
-                HStack {
-                    Text(displayText(for: captured, isRecording: isRecording.wrappedValue))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(displayColor(forRecording: isRecording.wrappedValue, hasValue: captured != nil))
-
-                    Spacer()
-
-                    Image(systemName: isRecording.wrappedValue ? "keyboard.badge.ellipsis" : "keyboard")
-                        .foregroundStyle(isRecording.wrappedValue ? Color.accentColor : Color.secondary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color(nsColor: .textBackgroundColor))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(
-                            isRecording.wrappedValue
-                            ? Color.accentColor.opacity(0.7)
-                            : Color.primary.opacity(0.08),
-                            lineWidth: isRecording.wrappedValue ? 2 : 1
-                        )
-                )
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            Text(help)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
-            KeyCaptureField(
-                capturedShortcut: binding,
-                isRecording: isRecording
-            )
-            .frame(width: 0, height: 0)
-        }
-    }
 
     private func actionButtonsSection(for input: ControllerInput) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -235,14 +170,14 @@ struct MappingEditorView: View {
 
         switch selectedActionType {
         case .keyboardKey:
-            guard let capturedKey else { return }
-            action = .keyboardKey(capturedKey.key)
+            let trimmed = keyboardKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            action = .keyboardKey(trimmed)
 
         case .keyboardShortcut:
-            guard let capturedShortcut else { return }
+            let trimmed = shortcutKey.trimmingCharacters(in: .whitespacesAndNewlines)
             action = .keyboardShortcut(
-                modifiers: capturedShortcut.modifiers,
-                key: capturedShortcut.key
+                modifiers: Array(shortcutModifiers),
+                key: trimmed
             )
 
         case .mouseButton:
@@ -272,12 +207,13 @@ struct MappingEditorView: View {
         case .keyboardKey(let key):
             resetEditor()
             selectedActionType = .keyboardKey
-            capturedKey = CapturedShortcut(key: key, modifiers: [])
+            keyboardKey = key
 
         case .keyboardShortcut(let modifiers, let key):
             resetEditor()
             selectedActionType = .keyboardShortcut
-            capturedShortcut = CapturedShortcut(key: key, modifiers: modifiers)
+            shortcutKey = key
+            shortcutModifiers = Set(modifiers)
 
         case .mouseButton(let button):
             resetEditor()
@@ -303,10 +239,9 @@ struct MappingEditorView: View {
 
     private func resetEditor() {
         selectedActionType = .keyboardKey
-        capturedKey = nil
-        capturedShortcut = nil
-        isRecordingKey = false
-        isRecordingShortcut = false
+        keyboardKey = ""
+        shortcutKey = ""
+        shortcutModifiers = []
         selectedMouseButton = .left
         selectedMouseAxis = .x
         selectedScrollAxis = .vertical
@@ -317,5 +252,5 @@ struct MappingEditorView: View {
 #Preview {
     MappingEditorView(selectedInput: .buttonA)
         .environmentObject(ControllerMappingStore())
-        .frame(width: 360, height: 700)
+        .frame(width: 320, height: 700)
 }

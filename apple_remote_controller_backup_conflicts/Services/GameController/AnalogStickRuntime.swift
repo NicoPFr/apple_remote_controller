@@ -1,3 +1,11 @@
+//
+//  AnalogStickRuntime.swift
+//  apple_remote_controller
+//
+//  Created by Nicolas Peeters on 26/05/2026.
+//
+
+
 import Foundation
 import CoreGraphics
 
@@ -17,17 +25,28 @@ final class AnalogStickRuntime {
 
     init(
         mappingStore: ControllerMappingStore,
-        dispatcher: SystemEventDispatcher = SystemEventDispatcher()
+        dispatcher: SystemEventDispatcher
     ) {
         self.mappingStore = mappingStore
         self.dispatcher = dispatcher
+    }
+
+    convenience init(mappingStore: ControllerMappingStore) {
+        self.init(
+            mappingStore: mappingStore,
+            dispatcher: SystemEventDispatcher()
+        )
     }
 
     func start() {
         stop()
 
         timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
-            self?.tick()
+            guard let self else { return }
+
+            Task { @MainActor in
+                self.tick()
+            }
         }
     }
 

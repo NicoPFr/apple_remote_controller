@@ -1,3 +1,11 @@
+//
+//  CapturedShortcut.swift
+//  apple_remote_controller
+//
+//  Created by Nicolas Peeters on 26/05/2026.
+//
+
+
 import SwiftUI
 import AppKit
 
