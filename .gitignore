@@ -1,0 +1,52 @@
+# macOS
+.DS_Store
+
+# Xcode user data
+xcuserdata/
+*.xcuserstate
+
+# Xcode build products
+build/
+DerivedData/
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Package.resolved
+
+# App bundles
+*.app
+*.dSYM
+*.dSYM.zip
+
+# Archives
+*.xcarchive
+
+# Playground
+timeline.xctimeline
+playground.xcworkspace
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code coverage / logs
+*.gcno
+*.gcda
+*.gcov
+*.profdata
+*.xccovreport
+*.xccovarchive
+
+# Temporary files
+*.swp
+*.tmp
+*.bak
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Custom local files

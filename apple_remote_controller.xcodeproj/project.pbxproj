@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3736470A2FC6CF8E00E9F1F5 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 373647092FC6CF8700E9F1F5 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		375B7FDC2FC58A9D00FD2FD9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		373647092FC6CF8700E9F1F5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = README.md; sourceTree = "<group>"; };
 		375B7FCC2FC58A9B00FD2FD9 /* apple_remote_controller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = apple_remote_controller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		375B7FDB2FC58A9D00FD2FD9 /* apple_remote_controllerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = apple_remote_controllerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		375B7FE52FC58A9D00FD2FD9 /* apple_remote_controllerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = apple_remote_controllerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +80,7 @@
 		375B7FC32FC58A9B00FD2FD9 = {
 			isa = PBXGroup;
 			children = (
+				373647092FC6CF8700E9F1F5 /* README.md */,
 				375B7FCE2FC58A9B00FD2FD9 /* apple_remote_controller */,
 				375B7FDE2FC58A9D00FD2FD9 /* apple_remote_controllerTests */,
 				375B7FE82FC58A9D00FD2FD9 /* apple_remote_controllerUITests */,
@@ -236,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3736470A2FC6CF8E00E9F1F5 /* README.md in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
