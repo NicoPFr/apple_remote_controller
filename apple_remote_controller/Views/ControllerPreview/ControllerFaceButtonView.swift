@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //
 //  ControllerFaceButtonView.swift
 //  apple_remote_controller
@@ -6,6 +7,8 @@
 //
 
 
+=======
+>>>>>>> develop
 import SwiftUI
 
 struct ControllerFaceButtonView: View {

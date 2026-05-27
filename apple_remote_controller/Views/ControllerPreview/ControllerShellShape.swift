@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //
 //  ControllerShellShape.swift
 //  apple_remote_controller
@@ -6,6 +7,8 @@
 //
 
 
+=======
+>>>>>>> develop
 import SwiftUI
 
 struct ControllerShellShape: Shape {

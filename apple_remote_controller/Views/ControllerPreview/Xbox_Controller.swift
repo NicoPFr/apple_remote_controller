@@ -5,10 +5,17 @@ struct XboxControllerView: View {
   var body: some View {
     if isResizable {
       canvas
+<<<<<<< HEAD
         .frame(idealWidth: 744.0, idealHeight: 500.0)
     } else {
       canvas
         .frame(width: 744.0, height: 500.0)
+=======
+        .frame(idealWidth: 744.0, idealHeight: 744.0)
+    } else {
+      canvas
+        .frame(width: 744.0, height: 744.0)
+>>>>>>> develop
     }
   }
 
@@ -2826,4 +2833,8 @@ struct XboxControllerView: View {
       }
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> develop
