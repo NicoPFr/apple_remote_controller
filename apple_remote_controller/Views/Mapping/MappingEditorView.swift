@@ -10,6 +10,7 @@ import SwiftUI
 
 struct MappingEditorView: View {
     @EnvironmentObject private var mappingStore: ControllerMappingStore
+    @EnvironmentObject private var settingsStore: AppSettingsStore
 
     let selectedInput: ControllerInput?
 
@@ -18,9 +19,12 @@ struct MappingEditorView: View {
     @State private var shortcutKey: String = ""
     @State private var shortcutModifiers: Set<KeyboardModifier> = []
     @State private var selectedMouseButton: MouseButton = .left
-    @State private var selectedMouseAxis: MouseAxis = .x
     @State private var selectedScrollAxis: ScrollAxis = .vertical
     @State private var selectedSystemAction: SystemAction = .missionControl
+    private var shouldShowStickSettings: Bool {
+        selectedInput == .leftStickMove || selectedInput == .rightStickMove
+    }
+
 
     var body: some View {
         ScrollView {
@@ -34,6 +38,9 @@ struct MappingEditorView: View {
                     actionTypeSection
                     actionConfigurationSection
                     actionButtonsSection(for: selectedInput)
+                    if shouldShowStickSettings {
+                        stickSensitivitySection
+                    }
 
                     Spacer(minLength: 0)
                 } else {
@@ -124,12 +131,10 @@ struct MappingEditorView: View {
                 .pickerStyle(.menu)
 
             case .mouseMove:
-                Picker("Axe souris", selection: $selectedMouseAxis) {
-                    ForEach(MouseAxis.allCases, id: \.self) { axis in
-                        Text(axis.label).tag(axis)
-                    }
-                }
-                .pickerStyle(.menu)
+                Text("Le déplacement souris utilise automatiquement les axes horizontal et vertical du joystick.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
             case .mouseScroll:
                 Picker("Axe de défilement", selection: $selectedScrollAxis) {
@@ -184,7 +189,7 @@ struct MappingEditorView: View {
             action = .mouseButton(selectedMouseButton)
 
         case .mouseMove:
-            action = .mouseMove(axis: selectedMouseAxis)
+            action = .mouseMove
 
         case .mouseScroll:
             action = .mouseScroll(axis: selectedScrollAxis)
@@ -220,10 +225,9 @@ struct MappingEditorView: View {
             selectedActionType = .mouseButton
             selectedMouseButton = button
 
-        case .mouseMove(let axis):
+        case .mouseMove:
             resetEditor()
             selectedActionType = .mouseMove
-            selectedMouseAxis = axis
 
         case .mouseScroll(let axis):
             resetEditor()
@@ -243,14 +247,86 @@ struct MappingEditorView: View {
         shortcutKey = ""
         shortcutModifiers = []
         selectedMouseButton = .left
-        selectedMouseAxis = .x
         selectedScrollAxis = .vertical
         selectedSystemAction = .missionControl
+    }
+    
+    private var stickSensitivitySection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Réglages du joystick")
+                .font(.headline)
+
+            if selectedInput == .leftStickMove {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Zone morte stick gauche")
+                        Spacer()
+                        Text(String(format: "%.2f", settingsStore.leftStickDeadZone))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Slider(
+                        value: Binding(
+                            get: { Double(settingsStore.leftStickDeadZone) },
+                            set: { settingsStore.leftStickDeadZone = Float($0) }
+                        ),
+                        in: 0.00...0.50
+                    )
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Sensibilité scroll")
+                        Spacer()
+                        Text(String(format: "%.0f", settingsStore.scrollSpeed))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Slider(value: $settingsStore.scrollSpeed, in: 1...40)
+                }
+            }
+
+            if selectedInput == .rightStickMove {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Zone morte stick droit")
+                        Spacer()
+                        Text(String(format: "%.2f", settingsStore.rightStickDeadZone))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Slider(
+                        value: Binding(
+                            get: { Double(settingsStore.rightStickDeadZone) },
+                            set: { settingsStore.rightStickDeadZone = Float($0) }
+                        ),
+                        in: 0.00...0.50
+                    )
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Sensibilité souris")
+                        Spacer()
+                        Text(String(format: "%.0f", settingsStore.mouseSpeed))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Slider(value: $settingsStore.mouseSpeed, in: 1...40)
+                }
+            }
+        }
     }
 }
 
 #Preview {
     MappingEditorView(selectedInput: .buttonA)
         .environmentObject(ControllerMappingStore())
+        .environmentObject(AppSettingsStore())
         .frame(width: 320, height: 700)
 }
+

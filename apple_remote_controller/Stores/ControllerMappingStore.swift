@@ -17,7 +17,7 @@ final class ControllerMappingStore: ObservableObject {
         .buttonX: .keyboardKey("R"),
         .buttonY: .systemAction(.missionControl),
         .leftStickMove: .mouseScroll(axis: .vertical),
-        .rightStickMove: .mouseMove(axis: .x)
+        .rightStickMove: .mouseMove
     ]
 
     func action(for input: ControllerInput) -> ControllerMappingAction? {
@@ -47,8 +47,8 @@ final class ControllerMappingStore: ObservableObject {
         case .keyboardShortcut(let modifiers, let key):
             let prefix = modifiers.map(\.label).joined(separator: "")
             return "Raccourci \(prefix)\(key)"
-        case .mouseMove(let axis):
-            return "Mouvement souris \(axis.label.lowercased())"
+        case .mouseMove:
+            return "Mouvement souris"
         case .mouseButton(let button):
             return button.label
         case .mouseScroll(let axis):

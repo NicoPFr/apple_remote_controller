@@ -16,15 +16,20 @@ final class AppCoordinator: ObservableObject {
     let mappingStore: ControllerMappingStore
     let controllerManager: GameControllerManager
     let dispatcher: SystemEventDispatcher
+    let settingsStore: AppSettingsStore
+    let layoutStore: UILayoutStore
     let analogRuntime: AnalogStickRuntime
 
     init() {
         self.mappingStore = ControllerMappingStore()
         self.controllerManager = GameControllerManager()
         self.dispatcher = SystemEventDispatcher()
+        self.settingsStore = AppSettingsStore()
+        self.layoutStore = UILayoutStore()
         self.analogRuntime = AnalogStickRuntime(
             mappingStore: mappingStore,
-            dispatcher: dispatcher
+            dispatcher: dispatcher,
+            settingsStore: settingsStore
         )
 
         hasAccessibilityPermission = AccessibilityPermissionService.isTrusted()

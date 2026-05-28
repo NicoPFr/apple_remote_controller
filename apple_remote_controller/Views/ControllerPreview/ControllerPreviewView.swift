@@ -5,11 +5,12 @@
 //  Created by Nicolas Peeters on 26/05/2026.
 //
 
-
 import SwiftUI
 
 struct ControllerPreviewView: View {
     let highlightedInputs: Set<ControllerInput>
+    let selectedInput: ControllerInput?
+    let onSelectInput: (ControllerInput) -> Void
 
     private let controllerAspectRatio: CGFloat = 744 / 500
 
@@ -48,129 +49,237 @@ struct ControllerPreviewView: View {
             let size = proxy.size
 
             ZStack {
-                faceButton("Y", color: Color.yellow, active: highlightedInputs.contains(.buttonY))
-                    .position(x: size.width * 0.775, y: size.height * 0.405)
+                interactiveFaceButton(
+                    title: "Y",
+                    color: .yellow,
+                    input: .buttonY,
+                    x: size.width * 0.775,
+                    y: size.height * 0.405
+                )
 
-                faceButton("X", color: Color.blue, active: highlightedInputs.contains(.buttonX))
-                    .position(x: size.width * 0.725, y: size.height * 0.475)
+                interactiveFaceButton(
+                    title: "X",
+                    color: .blue,
+                    input: .buttonX,
+                    x: size.width * 0.725,
+                    y: size.height * 0.475
+                )
 
-                faceButton("B", color: Color.red, active: highlightedInputs.contains(.buttonB))
-                    .position(x: size.width * 0.825, y: size.height * 0.475)
+                interactiveFaceButton(
+                    title: "B",
+                    color: .red,
+                    input: .buttonB,
+                    x: size.width * 0.825,
+                    y: size.height * 0.475
+                )
 
-                faceButton("A", color: Color.green, active: highlightedInputs.contains(.buttonA))
-                    .position(x: size.width * 0.775, y: size.height * 0.545)
+                interactiveFaceButton(
+                    title: "A",
+                    color: .green,
+                    input: .buttonA,
+                    x: size.width * 0.775,
+                    y: size.height * 0.545
+                )
 
-                stickHighlight(active: highlightedInputs.contains(.leftStick))
-                    .position(x: size.width * 0.365, y: size.height * 0.705)
+                interactiveStick(
+                    input: .leftStick,
+                    x: size.width * 0.365,
+                    y: size.height * 0.705
+                )
 
-                stickHighlight(active: highlightedInputs.contains(.rightStick))
-                    .position(x: size.width * 0.625, y: size.height * 0.705)
+                interactiveStick(
+                    input: .rightStick,
+                    x: size.width * 0.625,
+                    y: size.height * 0.705
+                )
 
-                dpadHighlight(activeInputs: highlightedInputs)
-                    .position(x: size.width * 0.225, y: size.height * 0.565)
+                interactiveDpad(size: size)
 
-                shoulderHighlight(title: "LB", active: highlightedInputs.contains(.leftShoulder))
-                    .position(x: size.width * 0.255, y: size.height * 0.175)
+                interactiveShoulder(
+                    title: "LB",
+                    input: .leftShoulder,
+                    x: size.width * 0.255,
+                    y: size.height * 0.175
+                )
 
-                shoulderHighlight(title: "RB", active: highlightedInputs.contains(.rightShoulder))
-                    .position(x: size.width * 0.745, y: size.height * 0.175)
+                interactiveShoulder(
+                    title: "RB",
+                    input: .rightShoulder,
+                    x: size.width * 0.745,
+                    y: size.height * 0.175
+                )
 
-                triggerHighlight(title: "LT", active: highlightedInputs.contains(.leftTrigger))
-                    .position(x: size.width * 0.245, y: size.height * 0.085)
+                interactiveTrigger(
+                    title: "LT",
+                    input: .leftTrigger,
+                    x: size.width * 0.245,
+                    y: size.height * 0.085
+                )
 
-                triggerHighlight(title: "RT", active: highlightedInputs.contains(.rightTrigger))
-                    .position(x: size.width * 0.755, y: size.height * 0.085)
+                interactiveTrigger(
+                    title: "RT",
+                    input: .rightTrigger,
+                    x: size.width * 0.755,
+                    y: size.height * 0.085
+                )
             }
         }
-        .allowsHitTesting(false)
     }
 
-    private func faceButton(_ title: String, color: Color, active: Bool) -> some View {
-        ZStack {
+    private func interactiveFaceButton(
+        title: String,
+        color: Color,
+        input: ControllerInput,
+        x: CGFloat,
+        y: CGFloat
+    ) -> some View {
+        let isActive = highlightedInputs.contains(input)
+        let isSelected = selectedInput == input
+
+        return Button {
+            onSelectInput(input)
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(isActive || isSelected ? color.opacity(0.95) : Color.clear)
+                    .frame(width: 26, height: 26)
+                    .shadow(color: (isActive || isSelected) ? color.opacity(0.45) : Color.clear, radius: 10)
+
+                Circle()
+                    .stroke((isActive || isSelected) ? Color.white.opacity(0.9) : Color.clear, lineWidth: 1.2)
+                    .frame(width: 26, height: 26)
+
+                if isActive || isSelected {
+                    Text(title)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.white)
+                }
+            }
+            .frame(width: 36, height: 36)
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .position(x: x, y: y)
+    }
+
+    private func interactiveStick(
+        input: ControllerInput,
+        x: CGFloat,
+        y: CGFloat
+    ) -> some View {
+        let isActive = highlightedInputs.contains(input)
+        let isSelected = selectedInput == input
+
+        return Button {
+            onSelectInput(input)
+        } label: {
             Circle()
-                .fill(active ? color.opacity(0.95) : Color.clear)
-                .frame(width: 26, height: 26)
-                .shadow(color: active ? color.opacity(0.45) : Color.clear, radius: 10)
+                .stroke((isActive || isSelected) ? Color.green.opacity(0.95) : Color.clear, lineWidth: 5)
+                .frame(width: 58, height: 58)
+                .shadow(color: (isActive || isSelected) ? Color.green.opacity(0.35) : Color.clear, radius: 10)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .frame(width: 70, height: 70)
+        .position(x: x, y: y)
+    }
 
+    private func interactiveShoulder(
+        title: String,
+        input: ControllerInput,
+        x: CGFloat,
+        y: CGFloat
+    ) -> some View {
+        let isActive = highlightedInputs.contains(input)
+        let isSelected = selectedInput == input
+
+        return Button {
+            onSelectInput(input)
+        } label: {
+            ZStack {
+                Capsule(style: .continuous)
+                    .fill(isActive || isSelected ? Color.orange.opacity(0.92) : Color.clear)
+                    .frame(width: 82, height: 18)
+
+                Capsule(style: .continuous)
+                    .stroke((isActive || isSelected) ? Color.white.opacity(0.85) : Color.clear, lineWidth: 1)
+
+                if isActive || isSelected {
+                    Text(title)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.white)
+                }
+            }
+            .frame(width: 90, height: 28)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .position(x: x, y: y)
+    }
+
+    private func interactiveTrigger(
+        title: String,
+        input: ControllerInput,
+        x: CGFloat,
+        y: CGFloat
+    ) -> some View {
+        let isActive = highlightedInputs.contains(input)
+        let isSelected = selectedInput == input
+
+        return Button {
+            onSelectInput(input)
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(isActive || isSelected ? Color.purple.opacity(0.92) : Color.clear)
+                    .frame(width: 64, height: 20)
+
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke((isActive || isSelected) ? Color.white.opacity(0.85) : Color.clear, lineWidth: 1)
+
+                if isActive || isSelected {
+                    Text(title)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.white)
+                }
+            }
+            .frame(width: 74, height: 30)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .position(x: x, y: y)
+    }
+
+    private func interactiveDpad(size: CGSize) -> some View {
+        ZStack {
+            dpadButton(input: .dpadUp, offsetX: 0, offsetY: -18)
+            dpadButton(input: .dpadDown, offsetX: 0, offsetY: 18)
+            dpadButton(input: .dpadLeft, offsetX: -18, offsetY: 0)
+            dpadButton(input: .dpadRight, offsetX: 18, offsetY: 0)
+        }
+        .position(x: size.width * 0.225, y: size.height * 0.565)
+    }
+
+    private func dpadButton(
+        input: ControllerInput,
+        offsetX: CGFloat,
+        offsetY: CGFloat
+    ) -> some View {
+        let isActive = highlightedInputs.contains(input)
+        let isSelected = selectedInput == input
+
+        return Button {
+            onSelectInput(input)
+        } label: {
             Circle()
-                .stroke(active ? Color.white.opacity(0.9) : Color.clear, lineWidth: 1.2)
-                .frame(width: 26, height: 26)
-
-            if active {
-                Text(title)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color.white)
-            }
+                .fill(isActive || isSelected ? Color.white.opacity(0.95) : Color.clear)
+                .frame(width: 16, height: 16)
+                .shadow(color: (isActive || isSelected) ? Color.white.opacity(0.35) : Color.clear, radius: 8)
+                .frame(width: 28, height: 28)
+                .contentShape(Circle())
         }
-    }
-
-    private func stickHighlight(active: Bool) -> some View {
-        Circle()
-            .stroke(active ? Color.green.opacity(0.95) : Color.clear, lineWidth: 5)
-            .frame(width: 58, height: 58)
-            .shadow(color: active ? Color.green.opacity(0.35) : Color.clear, radius: 10)
-    }
-
-    private func shoulderHighlight(title: String, active: Bool) -> some View {
-        ZStack {
-            Capsule(style: .continuous)
-                .fill(active ? Color.orange.opacity(0.92) : Color.clear)
-                .frame(width: 82, height: 18)
-
-            Capsule(style: .continuous)
-                .stroke(active ? Color.white.opacity(0.85) : Color.clear, lineWidth: 1)
-
-            if active {
-                Text(title)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color.white)
-            }
-        }
-    }
-
-    private func triggerHighlight(title: String, active: Bool) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(active ? Color.purple.opacity(0.92) : Color.clear)
-                .frame(width: 64, height: 20)
-
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(active ? Color.white.opacity(0.85) : Color.clear, lineWidth: 1)
-
-            if active {
-                Text(title)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color.white)
-            }
-        }
-    }
-
-    private func dpadHighlight(activeInputs: Set<ControllerInput>) -> some View {
-        let up = activeInputs.contains(.dpadUp)
-        let down = activeInputs.contains(.dpadDown)
-        let left = activeInputs.contains(.dpadLeft)
-        let right = activeInputs.contains(.dpadRight)
-
-        return ZStack {
-            dpadDot(active: up)
-                .offset(y: -18)
-
-            dpadDot(active: down)
-                .offset(y: 18)
-
-            dpadDot(active: left)
-                .offset(x: -18)
-
-            dpadDot(active: right)
-                .offset(x: 18)
-        }
-    }
-
-    private func dpadDot(active: Bool) -> some View {
-        Circle()
-            .fill(active ? Color.white.opacity(0.95) : Color.clear)
-            .frame(width: 16, height: 16)
-            .shadow(color: active ? Color.white.opacity(0.35) : Color.clear, radius: 8)
+        .buttonStyle(.plain)
+        .offset(x: offsetX, y: offsetY)
     }
 }
 
@@ -182,7 +291,9 @@ struct ControllerPreviewView: View {
             .rightStick,
             .leftTrigger,
             .dpadUp
-        ]
+        ],
+        selectedInput: .buttonA,
+        onSelectInput: { _ in }
     )
     .padding()
     .frame(width: 900, height: 420)

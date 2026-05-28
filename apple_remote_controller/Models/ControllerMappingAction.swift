@@ -11,7 +11,7 @@ import Foundation
 enum ControllerMappingAction: Hashable, Codable {
     case keyboardKey(String)
     case keyboardShortcut(modifiers: [KeyboardModifier], key: String)
-    case mouseMove(axis: MouseAxis)
+    case mouseMove
     case mouseButton(MouseButton)
     case mouseScroll(axis: ScrollAxis)
     case systemAction(SystemAction)
@@ -29,18 +29,6 @@ enum KeyboardModifier: String, Hashable, Codable, CaseIterable {
         case .option: return "⌥"
         case .control: return "⌃"
         case .shift: return "⇧"
-        }
-    }
-}
-
-enum MouseAxis: String, Hashable, Codable, CaseIterable {
-    case x
-    case y
-
-    var label: String {
-        switch self {
-        case .x: return "Horizontal"
-        case .y: return "Vertical"
         }
     }
 }

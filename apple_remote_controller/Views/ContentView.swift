@@ -16,7 +16,17 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             if !coordinator.hasAccessibilityPermission {
-                accessibilityBanner
+                AccessibilityPermissionBanner(
+                    onRequestPermission: {
+                        coordinator.requestAccessibilityPermission()
+                    },
+                    onOpenSettings: {
+                        coordinator.openAccessibilitySettings()
+                    },
+                    onRefresh: {
+                        coordinator.refreshAccessibilityPermission()
+                    }
+                )
             }
 
             ResponsiveThreePanelLayout(
@@ -26,41 +36,8 @@ struct ContentView: View {
         }
         .environmentObject(coordinator.mappingStore)
         .environmentObject(coordinator.controllerManager)
-    }
-
-    private var accessibilityBanner: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Autorisation Accessibilité requise")
-                    .font(.headline)
-
-                Text("L’application a besoin de l’accès Accessibilité pour envoyer des actions clavier et souris.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button("Autoriser") {
-                coordinator.requestAccessibilityPermission()
-            }
-
-            Button("Ouvrir les réglages") {
-                coordinator.openAccessibilitySettings()
-            }
-
-            Button("Actualiser") {
-                coordinator.refreshAccessibilityPermission()
-            }
-        }
-        .padding(16)
-        .background(Color.orange.opacity(0.12))
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(Color.orange.opacity(0.25)),
-            alignment: .bottom
-        )
+        .environmentObject(coordinator.settingsStore)
+        .environmentObject(coordinator.layoutStore)
     }
 }
 

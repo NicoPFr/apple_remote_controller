@@ -13,28 +13,28 @@ import CoreGraphics
 final class AnalogStickRuntime {
     private let mappingStore: ControllerMappingStore
     private let dispatcher: SystemEventDispatcher
+    private let settingsStore: AppSettingsStore
 
     private var timer: Timer?
 
     private var leftStick: StickVector = .zero
     private var rightStick: StickVector = .zero
 
-    private let deadZone: Float = 0.18
-    private let mouseSpeed: CGFloat = 18
-    private let scrollSpeed: CGFloat = 14
-
     init(
         mappingStore: ControllerMappingStore,
-        dispatcher: SystemEventDispatcher
+        dispatcher: SystemEventDispatcher,
+        settingsStore: AppSettingsStore
     ) {
         self.mappingStore = mappingStore
         self.dispatcher = dispatcher
+        self.settingsStore = settingsStore
     }
 
     convenience init(mappingStore: ControllerMappingStore) {
         self.init(
             mappingStore: mappingStore,
-            dispatcher: SystemEventDispatcher()
+            dispatcher: SystemEventDispatcher(),
+            settingsStore: AppSettingsStore()
         )
     }
 
@@ -56,11 +56,11 @@ final class AnalogStickRuntime {
     }
 
     func updateLeftStick(_ vector: StickVector) {
-        leftStick = filtered(vector)
+        leftStick = filtered(vector, deadZone: settingsStore.leftStickDeadZone)
     }
 
     func updateRightStick(_ vector: StickVector) {
-        rightStick = filtered(vector)
+        rightStick = filtered(vector, deadZone: settingsStore.rightStickDeadZone)
     }
 
     private func tick() {
@@ -73,8 +73,9 @@ final class AnalogStickRuntime {
         guard case .mouseMove = action else { return }
         guard !rightStick.isNearlyZero else { return }
 
-        let dx = CGFloat(rightStick.x) * mouseSpeed
-        let dy = CGFloat(rightStick.y) * mouseSpeed
+        let speed = CGFloat(settingsStore.mouseSpeed)
+        let dx = CGFloat(rightStick.x) * speed
+        let dy = CGFloat(rightStick.y) * speed
 
         dispatcher.moveMouseBy(deltaX: dx, deltaY: -dy)
     }
@@ -84,29 +85,31 @@ final class AnalogStickRuntime {
         guard case .mouseScroll(let axis) = action else { return }
         guard !leftStick.isNearlyZero else { return }
 
+        let speed = CGFloat(settingsStore.scrollSpeed)
+
         switch axis {
         case .vertical:
-            let amount = Int32(CGFloat(leftStick.y) * scrollSpeed)
+            let amount = Int32(CGFloat(leftStick.y) * speed)
             dispatcher.scrollStep(axis: .vertical, amount: amount)
 
         case .horizontal:
-            let amount = Int32(CGFloat(leftStick.x) * scrollSpeed)
+            let amount = Int32(CGFloat(leftStick.x) * speed)
             dispatcher.scrollStep(axis: .horizontal, amount: amount)
         }
     }
 
-    private func filtered(_ vector: StickVector) -> StickVector {
+    private func filtered(_ vector: StickVector, deadZone: Float) -> StickVector {
         guard vector.magnitude >= deadZone else {
             return .zero
         }
 
         return StickVector(
-            x: normalized(vector.x),
-            y: normalized(vector.y)
+            x: normalized(vector.x, deadZone: deadZone),
+            y: normalized(vector.y, deadZone: deadZone)
         )
     }
 
-    private func normalized(_ value: Float) -> Float {
+    private func normalized(_ value: Float, deadZone: Float) -> Float {
         let sign: Float = value >= 0 ? 1 : -1
         let absValue = abs(value)
 
